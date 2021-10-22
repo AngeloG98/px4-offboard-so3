@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="offboard_so3" type="offboard_so3_node" name="offboard_so3" output="screen">
+    </node>
+</launch>
