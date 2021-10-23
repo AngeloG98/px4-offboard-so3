@@ -15,7 +15,7 @@ public:
 
     void setVelCtrlMode(const int &mode);
     void setVelCtrlRate(const double &rate);
-    void setModelParam(const double &mass, const double &fmax);
+    void setModelParam(const double &f_w_ratio);
     void setVelCtrlParam(const Eigen::Vector4d &Kp,
                          const Eigen::Vector4d &Ki,
                          const Eigen::Vector4d &Kd);
@@ -46,8 +46,7 @@ private:
     int mode_;
     double rate_;
     
-    double mass_;
-    double fmax_;
+    double f_w_ratio_;
     Eigen::Vector3d g_;
 
     Eigen::Vector4d kp_;

@@ -2,12 +2,11 @@
 
 VelCtrl::VelCtrl()
 {
-    mass_ = 1.5;
-    fmax_ = 25;
-    g_ = Eigen::Vector3d(0,0,-9.8);
+    f_w_ratio_ = 1.73;
+    g_ = Eigen::Vector3d(0, 0, -9.8);
 
     kp_ = Eigen::Vector4d(2,2,2,1);
-    ki_ = Eigen::Vector4d(0,0,0,0);
+    ki_ = Eigen::Vector4d(0.1,0.1,0.2,0);
     kd_ = Eigen::Vector4d(0,0,0,0);
 
     vel_ = Eigen::Vector3d(0, 0, 0);
@@ -18,7 +17,7 @@ VelCtrl::VelCtrl()
     Roll_Satur = 60;
     YAWRATE_Satur = 30;
     XYZ_D_Satur = Eigen::Vector3d(0.1, 0.1, 0.1);
-    XYZ_I_Err_Satur = Eigen::Vector3d(0.5, 0.5, 0.2);
+    XYZ_I_Err_Satur = Eigen::Vector3d(0.1, 0.1, 0.3);
     YAWRATE_D_Satur = 5;
     YAWRATE_I_Err_Satur = 10;
     
@@ -28,12 +27,11 @@ VelCtrl::VelCtrl()
 VelCtrl::VelCtrl(const int &mode, const double &rate)
         :mode_(mode), rate_(rate)
 {
-    mass_ = 1.5;
-    fmax_ = 25;
+    f_w_ratio_ = 1.76;
     g_ = Eigen::Vector3d(0,0,-9.8);
 
-    kp_ = Eigen::Vector4d(2, 2, 1, 1);
-    ki_ = Eigen::Vector4d(0,0,0,0);
+    kp_ = Eigen::Vector4d(2, 2, 2, 1);
+    ki_ = Eigen::Vector4d(0.4,0.4,0.4,0.2);
     kd_ = Eigen::Vector4d(0,0,0,0);
 
     vel_ = Eigen::Vector3d(0, 0, 0);
@@ -44,7 +42,7 @@ VelCtrl::VelCtrl(const int &mode, const double &rate)
     Roll_Satur = 60;
     YAWRATE_Satur = 30;
     XYZ_D_Satur = Eigen::Vector3d(0.1, 0.1, 0.1);
-    XYZ_I_Err_Satur = Eigen::Vector3d(0.5, 0.5, 0.2);
+    XYZ_I_Err_Satur = Eigen::Vector3d(0.5, 0.5, 0.5);
     YAWRATE_D_Satur = 5;
     YAWRATE_I_Err_Satur = 10;
     
@@ -69,10 +67,9 @@ void VelCtrl::setVelCtrlRate(const double &rate)
     rate_ = rate;
 }
 
-void VelCtrl::setModelParam(const double &mass, const double &fmax)
+void VelCtrl::setModelParam(const double &f_w_ratio)
 {
-    mass_ = mass;
-    fmax_ = fmax;
+    f_w_ratio_ = f_w_ratio;
 }
 
 void VelCtrl::setVelCtrlParam(const Eigen::Vector4d &Kp,
@@ -126,9 +123,11 @@ void VelCtrl::updateAttitudeCmd(const Eigen::Vector3d &des_vel, const double &de
                     + acc_d \
                     + acc_ff[i];
     }
-    acc_cmd_ -= mass_ * g_;
-    limit(acc_cmd_[0], acc_cmd_[1], acc_cmd_[2], fmax_);
-    thr_cmd_ = std::max(0.0, std::min(1.0, acc_cmd_.norm() / fmax_));
+    acc_cmd_ -= g_;
+    ROS_INFO("acc cmd raw: %f %f %f", acc_cmd_[0], acc_cmd_[1], acc_cmd_[2]);
+    limit(acc_cmd_[0], acc_cmd_[1], acc_cmd_[2], f_w_ratio_ * abs(g_[2]));
+    ROS_INFO("acc cmd: %f %f %f", acc_cmd_[0], acc_cmd_[1], acc_cmd_[2]);
+    thr_cmd_ = std::max(0.0, std::min(1.0, acc_cmd_.norm() / (f_w_ratio_ * abs(g_[2]))));
 
     //
     double error_yaw = (des_yaw - yaw_)* rad2deg;

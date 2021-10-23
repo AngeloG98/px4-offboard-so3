@@ -10,7 +10,10 @@
         "string_view": "cpp",
         "initializer_list": "cpp",
         "random": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "memory": "cpp",
+        "istream": "cpp",
+        "functional": "cpp"
     },
     "python.autoComplete.extraPaths": [
         "/home/wenhangao/Files/zzfly_ws/devel/lib/python2.7/dist-packages",
