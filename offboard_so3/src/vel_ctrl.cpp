@@ -2,7 +2,7 @@
 
 VelCtrl::VelCtrl()
 {
-    f_w_ratio_ = 1.73;
+    f_w_ratio_ = 1.75;
     g_ = Eigen::Vector3d(0, 0, -9.8);
 
     kp_ = Eigen::Vector4d(2,2,2,1);
@@ -27,7 +27,7 @@ VelCtrl::VelCtrl()
 VelCtrl::VelCtrl(const int &mode, const double &rate)
         :mode_(mode), rate_(rate)
 {
-    f_w_ratio_ = 1.76;
+    f_w_ratio_ = 1.75;
     g_ = Eigen::Vector3d(0,0,-9.8);
 
     kp_ = Eigen::Vector4d(2, 2, 2, 1);
