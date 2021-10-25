@@ -1,0 +1,19 @@
+rate:
+  pos_rate: 50
+  vel_rate: 100
+
+gains:
+  pos_kp: {x: 1.0, y: 1.0, z: 1.0, yaw: 1.0}
+  pos_ki: {x: 0.0, y: 0.0, z: 0.0, yaw: 0.0}
+  pos_kd: {x: 0.0, y: 0.0, z: 0.0, yaw: 0.0}
+  vel_kp: {x: 2.0, y: 2.0, z: 1.5, yaw: 1.0}
+  vel_ki: {x: 0.1, y: 0.1, z: 0.3, yaw: 0.0}
+  vel_kd: {x: 0.0, y: 0.0, z: 0.0, yaw: 0.0}
+
+satur:
+  pos:
+    all: {xy: 2.0, z: 1.5, yawrate: 1.0}
+    d: {xy: 2.0, yaw: 1.0}
+
+
+

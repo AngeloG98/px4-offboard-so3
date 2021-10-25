@@ -9,15 +9,27 @@
 class PosCtrl
 {
 public:
-    PosCtrl();
-    PosCtrl(const int &mode, const double &rate);
+    PosCtrl() {}
+    ~PosCtrl() {}
+    void init(const int &mode,
+              const double &rate,
+              const Eigen::Vector4d &kp,
+              const Eigen::Vector4d &ki,
+              const Eigen::Vector4d &kd,
+              const double &xysatur,
+              const double &zsatur,
+              const double &yawratesatur,
+              const double &xy_dsatur,
+              const double &xy_i_errsatur,
+              const double &yaw_dsatur,
+              const double &yawrate_i_errsatur);
     void reset(void);
 
     void setPosCtrlMode(const int &mode);
     void setPosCtrlRate(const double &rate);
-    void setPosCtrlParam(const Eigen::Vector4d &Kp,
-                         const Eigen::Vector4d &Ki,
-                         const Eigen::Vector4d &Kd);
+    void setPosCtrlParam(const Eigen::Vector4d &kp,
+                         const Eigen::Vector4d &ki,
+                         const Eigen::Vector4d &kd);
     void setPositionState(const Eigen::Vector3d &position, const double &yaw);
     void updateVelocityCmd(const Eigen::Vector3d &des_pos, const double &des_yaw, 
                            const Eigen::Vector3d &vel_ff);
@@ -57,7 +69,6 @@ private:
     Eigen::Vector3d err_pos_integrate_;
     double err_yaw_last_;
     double err_yaw_integrate_;
-
 };
 
 #endif

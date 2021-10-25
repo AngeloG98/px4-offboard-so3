@@ -1,4 +1,5 @@
 <launch>
-  <node pkg="offboard_so3" type="offboard_so3_node" name="offboard_so3" output="screen">
+    <node pkg="offboard_so3" type="offboard_so3_node" name="offboard_so3" output="screen">
+        <rosparam file="$(find offboard_so3)/config/controller_param.yaml"/>
     </node>
 </launch>

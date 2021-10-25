@@ -1,52 +1,50 @@
 #include <offboard_so3/pos_ctrl.hpp>
 
-PosCtrl::PosCtrl()
+void PosCtrl::init(const int &mode,
+                   const double &rate,
+                   const Eigen::Vector4d &kp,
+                   const Eigen::Vector4d &ki,
+                   const Eigen::Vector4d &kd,
+                   const double &xysatur,
+                   const double &zsatur,
+                   const double &yawratesatur,
+                   const double &xy_dsatur,
+                   const double &xy_i_errsatur,
+                   const double &yaw_dsatur,
+                   const double &yawrate_i_errsatur)
 {
-    kp_ = Eigen::Vector4d(1,1,1,1);
-    ki_ = Eigen::Vector4d(0,0,0,0);
-    kd_ = Eigen::Vector4d(0,0,0,0);
+    mode_ = mode;
+    rate_ = rate;
 
-    pos_ = Eigen::Vector3d(0, 0, 0);
-    yaw_ = 0;
+    kp_ = kp;
+    ki_ = ki;
+    kd_ = kd;
 
-    XY_Satur = 3;
-    Z_Satur = 2;
-    YAWRATE_Satur = 30;
-    XY_D_Satur = 0.5;
-    XY_I_Err_Satur = 0.1;
-    YAWRATE_D_Satur = 5;
-    YAWRATE_I_Err_Satur = 10;
+    XY_Satur = xysatur;
+    Z_Satur = zsatur;
+    YAWRATE_Satur = yawratesatur;
+    XY_D_Satur = xy_dsatur;
+    XY_I_Err_Satur = xy_i_errsatur;
+    YAWRATE_D_Satur = yaw_dsatur;
+    YAWRATE_I_Err_Satur = yawrate_i_errsatur;
+
+    vel_cmd_ << 0.0, 0.0, 0.0;
+    vel_cmd_body_ << 0.0, 0.0, 0.0;
+    yawrate_cmd_ = 0;
+    yaw_cmd_ = 0;
     
-    reset();
-}
+    pos_ << 0.0, 0.0, 0.0;
+    yaw_ = 0.0;
 
-PosCtrl::PosCtrl(const int &mode, const double &rate)
-        :mode_(mode), rate_(rate)
-{
-    kp_ = Eigen::Vector4d(1,1,1,1);
-    ki_ = Eigen::Vector4d(0,0,0,0);
-    kd_ = Eigen::Vector4d(0,0,0,0);
-
-    pos_ = Eigen::Vector3d(0, 0, 0);
-    yaw_ = 0;
-
-    XY_Satur = 3;
-    Z_Satur = 2;
-    YAWRATE_Satur = 30;
-    XY_D_Satur = 0.5;
-    XY_I_Err_Satur = 1;
-    YAWRATE_D_Satur = 5;
-    YAWRATE_I_Err_Satur = 10;
-    
     reset();
 }
 
 void PosCtrl::reset(void)
 {
-    err_pos_last_ = Eigen::Vector3d(0,0,0);
-    err_pos_integrate_= Eigen::Vector3d(0,0,0);
-    err_yaw_last_ = 0;
-    err_yaw_integrate_ = 0;
+    err_pos_last_ << 0.0, 0.0, 0.0;
+    err_pos_integrate_ << 0.0, 0.0, 0.0;
+    err_yaw_last_ = 0.0;
+    err_yaw_integrate_ = 0.0;
 }
 
 void PosCtrl::setPosCtrlMode(const int &mode)
@@ -59,13 +57,13 @@ void PosCtrl::setPosCtrlRate(const double &rate)
     rate_ = rate;
 }
 
-void PosCtrl::setPosCtrlParam(const Eigen::Vector4d &Kp,
-                              const Eigen::Vector4d &Ki,
-                              const Eigen::Vector4d &Kd)
+void PosCtrl::setPosCtrlParam(const Eigen::Vector4d &kp,
+                              const Eigen::Vector4d &ki,
+                              const Eigen::Vector4d &kd)
 {
-    kp_ = Kp;
-    ki_ = Ki;
-    kd_ = Kd;
+    kp_ = kp;
+    ki_ = ki;
+    kd_ = kd;
 }
 
 void PosCtrl::setPositionState(const Eigen::Vector3d &position,
@@ -118,7 +116,7 @@ void PosCtrl::updateVelocityCmd(const Eigen::Vector3d &des_pos,
     //Position Control Yaw
     yaw_cmd_ = yaw_;
     yawrate_cmd_ = 0.0;
-    if (mode_ == 0) //mode 1 -> no yaw control
+    if (mode_ == 0) //mode 0 -> no yaw control
     {
         yaw_cmd_ = des_yaw; //set yaw_cmd_ as des_yaw to low level controller
     }

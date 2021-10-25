@@ -9,16 +9,30 @@
 class VelCtrl
 {
 public:
-    VelCtrl();
-    VelCtrl(const int &mode, const double &rate);
+    VelCtrl() {}
+    ~VelCtrl() {}
+    void init(const int &mode,
+              const double &rate,
+              const double &fwratio,
+              const Eigen::Vector4d &kp,
+              const Eigen::Vector4d &ki,
+              const Eigen::Vector4d &kd,
+              const Eigen::Vector3d &accsatur,
+              const double &pitchsatur,
+              const double &rollsatur,
+              const double &yawratesatur,
+              const Eigen::Vector3d &xyz_dsatur,
+              const Eigen::Vector3d &xyz_i_errsatur,
+              const double &yawrate_dsatur,
+              const double &yawrate_i_errsatur);
     void reset(void);
 
     void setVelCtrlMode(const int &mode);
     void setVelCtrlRate(const double &rate);
     void setModelParam(const double &f_w_ratio);
-    void setVelCtrlParam(const Eigen::Vector4d &Kp,
-                         const Eigen::Vector4d &Ki,
-                         const Eigen::Vector4d &Kd);
+    void setVelCtrlParam(const Eigen::Vector4d &kp,
+                         const Eigen::Vector4d &ki,
+                         const Eigen::Vector4d &kd);
     void setVelocityState(const Eigen::Vector3d &velocity, const double &yaw);
     void updateAttitudeCmd(const Eigen::Vector3d &des_vel, const double &des_yaw,
                            const Eigen::Vector3d &acc_ff);

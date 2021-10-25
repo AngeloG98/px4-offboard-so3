@@ -6,10 +6,47 @@
 #include <mavros_msgs/State.h>
 #include <nav_msgs/Odometry.h>
 #include <mavros_msgs/AttitudeTarget.h>
+#include <mavros_msgs/PositionTarget.h>
 
 #include <offboard_so3/pos_ctrl.hpp>
 #include <offboard_so3/vel_ctrl.hpp>
 
+//mav frame
+int FRAME_LOCAL_NED = 1;
+int FRAME_LOCAL_OFFSET_NED = 7;
+int FRAME_BODY_NED = 8;
+int FRAME_BODY_OFFSET_NED = 9;
+
+//local ignore
+int IGNORE_PX = 1;
+int IGNORE_PY = 2;
+int IGNORE_PZ = 4;
+int IGNORE_VX = 8;
+int IGNORE_VY = 16;
+int IGNORE_VZ = 32;
+int IGNORE_AFX = 64;
+int IGNORE_AFY = 128;
+int IGNORE_AFZ = 256;
+int FORCE = 512;
+int IGNORE_YAW = 1024;
+int IGNORE_YAW_RATE = 2048;
+
+//attitude ignore
+int IGNORE_ROLL_RATE = 1;
+int IGNORE_PITCH_RATE = 2;
+int IGNORE_YAW_RATE = 4;
+int IGNORE_THRUST = 64;
+int IGNORE_ATTITUDE = 128;
+
+//control musk
+int POS_YAW_NED = 1;
+int POS_YAW_FLU = 2;
+int POS_YAWRATE_NED = 4;
+int POS_YAWRATE_FLU = 8;
+int VEL_YAW_ATT = 16;
+int VEL_YAW_ACC = 32;
+int VEL_YAWRATE_ATT = 64;
+int VEL_YAWRATE_ACC = 128;
 
 class OffboardSO3Node
 {
@@ -23,6 +60,7 @@ private:
     VelCtrl vel_controller_;
 
     ros::NodeHandle nh_;
+    ros::NodeHandle nh_private_;
     ros::Subscriber odom_sub_;
     ros::Subscriber state_sub_;
     ros::Subscriber pose_sub_;
@@ -34,6 +72,7 @@ private:
     ros::ServiceClient arming_client_;
     ros::ServiceClient set_mode_client_;
     ros::Timer posctrl_timer_, velctrl_timer_, status_timer_;
+
     ros::Time last_request_;
 
     mavros_msgs::State current_state_;
@@ -43,11 +82,45 @@ private:
     Eigen::Vector3d current_position_;
     Eigen::Vector3d current_velocity_;
     double current_yaw_;
-    double ctrl_rate_;
+    
     int musk_;
+    int pos_mode_;
+    int vel_mode_;
+    double pos_ctrl_rate_;
+    double vel_ctrl_rate_;
+    
+    //position control param
+    Eigen::Vector4d pos_kp;
+    Eigen::Vector4d pos_ki;
+    Eigen::Vector4d pos_kd;
+    double pos_xysatur;
+    double pos_zsatur;
+    double pos_yawratesatur;
+    double pos_xy_dsatur;
+    double pos_xy_i_errsatur;
+    double pos_yaw_dsatur;
+    double pos_yawrate_i_errsatur;
+
+    //velocity control param
+    double vel_fwratio;
+    Eigen::Vector4d vel_kp;
+    Eigen::Vector4d vel_ki;
+    Eigen::Vector4d vel_kd;
+    Eigen::Vector3d vel_accsatur;
+    double vel_pitchsatur;
+    double vel_rollsatur;
+    double vel_yawratesatur;
+    Eigen::Vector3d vel_xyz_dsatur;
+    Eigen::Vector3d vel_xyz_i_errsatur;
+    double vel_yawrate_dsatur;
+    double vel_yawrate_i_errsatur;
+
+    //info count
     int vel_cnt;
     int att_cnt;
     int odom_cnt;
+    
+    //takeoff flag
     bool takeoff_;
 
     void state_callback(const mavros_msgs::State::ConstPtr &msg);
