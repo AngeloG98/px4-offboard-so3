@@ -96,6 +96,9 @@ find_package(catkin REQUIRED COMPONENTS
 #   cfg/DynReconf1.cfg
 #   cfg/DynReconf2.cfg
 # )
+generate_dynamic_reconfigure_options(
+  cfg/OffboardSo3Controller.cfg
+)
 
 ###################################
 ## catkin specific configuration ##

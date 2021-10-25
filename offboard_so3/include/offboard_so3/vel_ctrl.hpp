@@ -2,7 +2,6 @@
 #define __VEL_CONTROL_H__
 
 #include <iostream>
-#include <ros/ros.h>
 #include <Eigen/Geometry>
 #include <offboard_so3/common.hpp>
 
@@ -13,13 +12,13 @@ public:
     ~VelCtrl() {}
     void init(const int &mode,
               const double &rate,
-              const double &fwratio,
+              const double &TWratio,
               const Eigen::Vector4d &kp,
               const Eigen::Vector4d &ki,
               const Eigen::Vector4d &kd,
               const Eigen::Vector3d &accsatur,
-              const double &pitchsatur,
               const double &rollsatur,
+              const double &pitchsatur,
               const double &yawratesatur,
               const Eigen::Vector3d &xyz_dsatur,
               const Eigen::Vector3d &xyz_i_errsatur,
@@ -29,7 +28,7 @@ public:
 
     void setVelCtrlMode(const int &mode);
     void setVelCtrlRate(const double &rate);
-    void setModelParam(const double &f_w_ratio);
+    void setModelParam(const double &T_W_ratio);
     void setVelCtrlParam(const Eigen::Vector4d &kp,
                          const Eigen::Vector4d &ki,
                          const Eigen::Vector4d &kd);
@@ -44,8 +43,8 @@ public:
     const double &getThrottleCmd(void);
     
     Eigen::Vector3d Acc_Satur;
-    double Pitch_Satur;
     double Roll_Satur;
+    double Pitch_Satur;
     double YAWRATE_Satur;
     Eigen::Vector3d XYZ_D_Satur;
     Eigen::Vector3d XYZ_I_Err_Satur;
@@ -60,7 +59,7 @@ private:
     int mode_;
     double rate_;
     
-    double f_w_ratio_;
+    double T_W_ratio_;
     Eigen::Vector3d g_;
 
     Eigen::Vector4d kp_;

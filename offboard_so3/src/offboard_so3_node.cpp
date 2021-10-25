@@ -38,81 +38,81 @@ OffboardSO3Node::OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandl
     } 
 
     //set controller parameters
-    nh_private_.param("", pos_ctrl_rate_, 50);
-    nh_private_.param("", vel_ctrl_rate_, 100);
+    nh_private_.param("rate/pos_rate", pos_ctrl_rate_, 50.0);
+    nh_private_.param("rate/vel_rate", vel_ctrl_rate_, 100.0);
 
-    nh_private_.param("", pos_kp[0], 1.0);
-    nh_private_.param("", pos_kp[1], 1.0);
-    nh_private_.param("", pos_kp[2], 1.0);
-    nh_private_.param("", pos_kp[3], 1.0);
+    nh_private_.param("gain/pos_kp/x", pos_kp[0], 1.0);
+    nh_private_.param("gain/pos_kp/y", pos_kp[1], 1.0);
+    nh_private_.param("gain/pos_kp/z", pos_kp[2], 1.0);
+    nh_private_.param("gain/pos_kp/yaw", pos_kp[3], 1.0);
 
-    nh_private_.param("", pos_ki[0], 0.0);
-    nh_private_.param("", pos_ki[1], 0.0);
-    nh_private_.param("", pos_ki[2], 0.0);
-    nh_private_.param("", pos_ki[3], 0.0);
+    nh_private_.param("gain/pos_ki/x", pos_ki[0], 0.0);
+    nh_private_.param("gain/pos_ki/y", pos_ki[1], 0.0);
+    nh_private_.param("gain/pos_ki/z", pos_ki[2], 0.0);
+    nh_private_.param("gain/pos_ki/yaw", pos_ki[3], 0.0);
 
-    nh_private_.param("", pos_kd[0], 0.0);
-    nh_private_.param("", pos_kd[1], 0.0);
-    nh_private_.param("", pos_kd[2], 0.0);
-    nh_private_.param("", pos_kd[3], 0.0);
+    nh_private_.param("gain/pos_kd/x", pos_kd[0], 0.0);
+    nh_private_.param("gain/pos_kd/y", pos_kd[1], 0.0);
+    nh_private_.param("gain/pos_kd/z", pos_kd[2], 0.0);
+    nh_private_.param("gain/pos_kd/yaw", pos_kd[3], 0.0);
 
-    nh_private_.param("", pos_xysatur, 3.0);
-    nh_private_.param("", pos_zsatur, 2.0);
-    nh_private_.param("", pos_yawratesatur, 30.0);
-    nh_private_.param("", pos_xy_dsatur, 0.5);
-    nh_private_.param("", pos_xy_i_errsatur, 0.1);
-    nh_private_.param("", pos_yaw_dsatur, 5.0);
-    nh_private_.param("", pos_yawrate_i_errsatur, 10.0);
+    nh_private_.param("satur/pos/vel_cmd/xy", pos_xysatur, 3.0);
+    nh_private_.param("satur/pos/vel_cmd/z", pos_zsatur, 2.0);
+    nh_private_.param("satur/pos/vel_cmd/yawrate", pos_yawratesatur, 30.0);
+    nh_private_.param("satur/pos/d/xy", pos_xy_dsatur, 0.5);
+    nh_private_.param("satur/pos/i_err/yawrate", pos_xy_i_errsatur, 0.1);
+    nh_private_.param("satur/pos/d/xy", pos_yaw_dsatur, 5.0);
+    nh_private_.param("satur/pos/i_err/yawrate", pos_yawrate_i_errsatur, 10.0);
     
-    nh_private_.param("", vel_fwratio, 17.5);
-    
-    nh_private_.param("", vel_kp[0], 2.0);
-    nh_private_.param("", vel_kp[1], 2.0);
-    nh_private_.param("", vel_kp[2], 1.5);
-    nh_private_.param("", vel_kp[3], 1.0);
+    nh_private_.param("twratio", TWratio, 1.75);
 
-    nh_private_.param("", vel_ki[0], 0.1);
-    nh_private_.param("", vel_ki[1], 0.1);
-    nh_private_.param("", vel_ki[2], 0.2);
-    nh_private_.param("", vel_ki[3], 0.0);
+    nh_private_.param("gain/vel_kp/x", vel_kp[0], 2.0);
+    nh_private_.param("gain/vel_kp/y", vel_kp[1], 2.0);
+    nh_private_.param("gain/vel_kp/z", vel_kp[2], 1.5);
+    nh_private_.param("gain/vel_kp/yaw", vel_kp[3], 1.0);
 
-    nh_private_.param("", vel_kd[0], 0.0);
-    nh_private_.param("", vel_kd[1], 0.0);
-    nh_private_.param("", vel_kd[2], 0.0);
-    nh_private_.param("", vel_kd[3], 0.0);
+    nh_private_.param("gain/vel_ki/x", vel_ki[0], 0.1);
+    nh_private_.param("gain/vel_ki/y", vel_ki[1], 0.1);
+    nh_private_.param("gain/vel_ki/z", vel_ki[2], 0.2);
+    nh_private_.param("gain/vel_ki/yaw", vel_ki[3], 0.0);
 
-    nh_private_.param("", vel_accsatur[0], 2.0);
-    nh_private_.param("", vel_accsatur[1], 2.0);
-    nh_private_.param("", vel_accsatur[2], 2.0);
-    nh_private_.param("", vel_pitchsatur, 30.0);
-    nh_private_.param("", vel_rollsatur, 60.0);
-    nh_private_.param("", vel_yawratesatur, 30.0);
-    nh_private_.param("", vel_xyz_dsatur[0], 0.1);
-    nh_private_.param("", vel_xyz_dsatur[1], 0.1);
-    nh_private_.param("", vel_xyz_dsatur[2], 0.1);
-    nh_private_.param("", vel_xyz_i_errsatur[0], 0.1);
-    nh_private_.param("", vel_xyz_i_errsatur[1], 0.1);
-    nh_private_.param("", vel_xyz_i_errsatur[2], 0.3);
-    nh_private_.param("", vel_yawrate_dsatur, 5.0);
-    nh_private_.param("", vel_yawrate_i_errsatur, 10.0);
+    nh_private_.param("gain/vel_kd/x", vel_kd[0], 0.0);
+    nh_private_.param("gain/vel_kd/y", vel_kd[1], 0.0);
+    nh_private_.param("gain/vel_kd/z", vel_kd[2], 0.0);
+    nh_private_.param("gain/vel_kd/yaw", vel_kd[3], 0.0);
+
+    nh_private_.param("satur/vel/acc_cmd/x", vel_accsatur[0], 2.0);
+    nh_private_.param("satur/vel/acc_cmd/y", vel_accsatur[1], 2.0);
+    nh_private_.param("satur/vel/acc_cmd/z", vel_accsatur[2], 2.0);
+    nh_private_.param("satur/vel/att_cmd/roll", vel_rollsatur, 60.0);
+    nh_private_.param("satur/vel/att_cmd/pitch", vel_pitchsatur, 30.0);
+    nh_private_.param("satur/vel/att_cmd/yawrate", vel_yawratesatur, 30.0);
+    nh_private_.param("satur/vel/d/x", vel_xyz_dsatur[0], 0.1);
+    nh_private_.param("satur/vel/d/y", vel_xyz_dsatur[1], 0.1);
+    nh_private_.param("satur/vel/d/z", vel_xyz_dsatur[2], 0.1);
+    nh_private_.param("satur/vel/i_err/x", vel_xyz_i_errsatur[0], 0.1);
+    nh_private_.param("satur/vel/i_err/y", vel_xyz_i_errsatur[1], 0.1);
+    nh_private_.param("satur/vel/i_err/z", vel_xyz_i_errsatur[2], 0.3);
+    nh_private_.param("satur/vel/d/yawrate", vel_yawrate_dsatur, 5.0);
+    nh_private_.param("satur/vel/i_err/yawrate", vel_yawrate_i_errsatur, 10.0);
 
     pos_controller_.init(pos_mode_, pos_ctrl_rate_,
                          pos_kp, pos_ki, pos_kd,
                          pos_xysatur, pos_zsatur, pos_yawratesatur,
                          pos_xy_dsatur, pos_xy_i_errsatur,
                          pos_yaw_dsatur, pos_yawrate_i_errsatur);
-    
+
     vel_controller_.init(vel_mode_, vel_ctrl_rate_,
-                         vel_fwratio,
+                         TWratio,
                          vel_kp, vel_ki, vel_kd,
                          vel_accsatur,
-                         vel_pitchsatur, vel_rollsatur, vel_yawratesatur,
+                         vel_rollsatur, vel_pitchsatur, vel_yawratesatur,
                          vel_xyz_dsatur, vel_xyz_i_errsatur,
                          vel_yawrate_dsatur, vel_yawrate_i_errsatur);
 
     local_pos_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 10);
-    local_vel_pub_ = nh_.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local", 10);
-    local_att_pub_ = nh_.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude", 10);
+    local_pub_ = nh_.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local", 10);
+    att_pub_ = nh_.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude", 10);
     
     state_sub_ = nh_.subscribe<mavros_msgs::State>("mavros/state", 10, &OffboardSO3Node::state_callback,this);
     // odom_sub_ = nh_.subscribe<nav_msgs::Odometry>("/mavros/local_position/odom", 10, &OffboardSO3Node::odom_callback,this);
@@ -122,8 +122,8 @@ OffboardSO3Node::OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandl
     arming_client_ = nh_.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     set_mode_client_ = nh_.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
 
-    posctrl_timer_ = nh_.createTimer(ros::Duration(1/ctrl_rate_), &OffboardSO3Node::posctrl_callback,this);
-    velctrl_timer_ = nh_.createTimer(ros::Duration(1/ctrl_rate_), &OffboardSO3Node::velctrl_callback,this);
+    posctrl_timer_ = nh_.createTimer(ros::Duration(1/pos_ctrl_rate_), &OffboardSO3Node::posctrl_callback,this);
+    velctrl_timer_ = nh_.createTimer(ros::Duration(1/vel_ctrl_rate_), &OffboardSO3Node::velctrl_callback,this);
     status_timer_ = nh_.createTimer(ros::Duration(0.05), &OffboardSO3Node::status_Callback,this);
     
 
@@ -190,14 +190,11 @@ OffboardSO3Node::posctrl_callback(const ros::TimerEvent &event)
 {
     if (takeoff_)
     {
-        // Eigen::Vector3d des_pos(2, 0, 2);
-        // double des_yaw = 0;
-        // Eigen::Vector3d vel_ff(0, 0, 0);
-        // pos_controller_.updateVelocityCmd(des_pos, des_yaw, vel_ff);
-        // velcmd_NED_publish(pos_controller_.getVelocityCmdENU(),pos_controller_.getYawrateCmd());
-        Eigen::Vector3d vel(0, 0, 0);
-        double yaw = 0.0;
-        velcmd_NED_publish(vel, yaw);
+        Eigen::Vector3d des_pos(2, 3, 2);
+        double des_yaw = 0;
+        Eigen::Vector3d vel_ff(0, 0, 0);
+        pos_controller_.updateVelocityCmd(des_pos, des_yaw, vel_ff);
+        velcmd_NED_publish(pos_controller_.getVelocityCmdENU(),pos_controller_.getYawrateCmd());
     }
 }
 
@@ -233,7 +230,7 @@ void OffboardSO3Node::velcmd_NED_publish(const Eigen::Vector3d &velcmd, const do
     msg.acceleration_or_force.z = 0;
     msg.yaw = 0;
     msg.yaw_rate = yawratecmd;
-    local_vel_pub_.publish(msg);
+    local_pub_.publish(msg);
     if (vel_cnt % 50 == 0)
     {
         ROS_INFO("velocity cmd : %f %f %f %f", msg.velocity.x, msg.velocity.y, msg.velocity.z, msg.yaw_rate * rad2deg);
@@ -257,13 +254,13 @@ OffboardSO3Node::att_thr_cmd_publish(const Eigen::Vector4d &quatcmd, const doubl
     msg.body_rate.x = 0;
     msg.body_rate.y = 0;
     msg.body_rate.z = 0;
-    msg.type_mask = IGNORE_ROLL_RATE + IGNORE_PITCH_RATE + IGNORE_YAW_RATE;  // Ignore rate messages
+    msg.type_mask = IGNORE_ROLL_RATE + IGNORE_PITCH_RATE + IGNORE_YAW_RATE_ATT;  // Ignore rate messages
     msg.orientation.w = quatcmd[0];
     msg.orientation.x = quatcmd[1];
     msg.orientation.y = quatcmd[2];
     msg.orientation.z = quatcmd[3];
     msg.thrust = thrcmd;
-    local_att_pub_.publish(msg);
+    att_pub_.publish(msg);
     Eigen::Vector3d euler = vel_controller_.getAttitudeCmdEuler();
     if (att_cnt % 50 == 0)
     {
@@ -287,6 +284,7 @@ OffboardSO3Node::status_Callback(const ros::TimerEvent &event)
     {
         ros::spinOnce();
         ROS_INFO("Connecting...");
+        
     }
     take_off();
 }
@@ -369,13 +367,26 @@ OffboardSO3Node::take_off(void)
     // }
 }
 
+void
+OffboardSO3Node::dynamicReconfigureCallback(offboard_so3::OffboardSo3ControllerConfig &config,
+                                                 uint32_t level)
+{
+    ROS_INFO("success");
+}
+
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "offboard_so3_node");
-    ros::NodeHandle nh;
-    int musk = 1;
-    double ctrl_rate = 100;
-    OffboardSO3Node OffboardSO3Controller(nh, musk, ctrl_rate);
+    ros::NodeHandle nh("");
+    ros::NodeHandle nh_private("~");
+    int musk = POS_YAWRATE_NED;
+    OffboardSO3Node OffboardSO3Controller(nh, nh_private, musk);
+
+    dynamic_reconfigure::Server<offboard_so3::OffboardSo3ControllerConfig> srv;
+    dynamic_reconfigure::Server<offboard_so3::OffboardSo3ControllerConfig>::CallbackType f;
+    f = boost::bind(&OffboardSO3Node::dynamicReconfigureCallback, OffboardSO3Controller, _1, _2);
+    srv.setCallback(f);
 
     ros::spin();
     return 0;

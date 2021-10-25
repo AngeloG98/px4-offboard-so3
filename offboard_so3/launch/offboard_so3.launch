@@ -2,4 +2,6 @@
     <node pkg="offboard_so3" type="offboard_so3_node" name="offboard_so3" output="screen">
         <rosparam file="$(find offboard_so3)/config/controller_param.yaml"/>
     </node>
+
+    <node pkg="rqt_reconfigure" type="rqt_reconfigure" output="screen" name="rqt_reconfigure" />
 </launch>

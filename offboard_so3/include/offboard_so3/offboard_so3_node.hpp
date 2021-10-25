@@ -1,4 +1,8 @@
+#ifndef __OFFBOARD_SO3_NODE_H__
+#define __OFFBOARD_SO3_NODE_H__
+
 #include <tf/tf.h>
+#include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <mavros_msgs/CommandBool.h>
@@ -7,6 +11,10 @@
 #include <nav_msgs/Odometry.h>
 #include <mavros_msgs/AttitudeTarget.h>
 #include <mavros_msgs/PositionTarget.h>
+
+#include <dynamic_reconfigure/server.h>
+#include <offboard_so3/OffboardSo3ControllerConfig.h>
+#include <std_srvs/SetBool.h>
 
 #include <offboard_so3/pos_ctrl.hpp>
 #include <offboard_so3/vel_ctrl.hpp>
@@ -34,7 +42,7 @@ int IGNORE_YAW_RATE = 2048;
 //attitude ignore
 int IGNORE_ROLL_RATE = 1;
 int IGNORE_PITCH_RATE = 2;
-int IGNORE_YAW_RATE = 4;
+int IGNORE_YAW_RATE_ATT = 4;
 int IGNORE_THRUST = 64;
 int IGNORE_ATTITUDE = 128;
 
@@ -51,8 +59,9 @@ int VEL_YAWRATE_ACC = 128;
 class OffboardSO3Node
 {
 public:
-    OffboardSO3Node(const ros::NodeHandle &nh, const int &musk, const double &ctrl_rate);
-
+    void dynamicReconfigureCallback(offboard_so3::OffboardSo3ControllerConfig &config, uint32_t level);
+    OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandle &nh_private, const int &musk);
+    
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
@@ -67,8 +76,8 @@ private:
     ros::Subscriber vel_sub_;
     ros::Subscriber plan_des_sub_;
     ros::Publisher local_pos_pub_;
-    ros::Publisher local_vel_pub_;
-    ros::Publisher  local_att_pub_;
+    ros::Publisher local_pub_;
+    ros::Publisher  att_pub_;
     ros::ServiceClient arming_client_;
     ros::ServiceClient set_mode_client_;
     ros::Timer posctrl_timer_, velctrl_timer_, status_timer_;
@@ -102,13 +111,13 @@ private:
     double pos_yawrate_i_errsatur;
 
     //velocity control param
-    double vel_fwratio;
+    double TWratio;
     Eigen::Vector4d vel_kp;
     Eigen::Vector4d vel_ki;
     Eigen::Vector4d vel_kd;
     Eigen::Vector3d vel_accsatur;
-    double vel_pitchsatur;
     double vel_rollsatur;
+    double vel_pitchsatur;
     double vel_yawratesatur;
     Eigen::Vector3d vel_xyz_dsatur;
     Eigen::Vector3d vel_xyz_i_errsatur;
@@ -134,3 +143,5 @@ private:
     void att_thr_cmd_publish(const Eigen::Vector4d &quatcmd, const double &thrcmd);
     void take_off(void);
 };
+
+#endif

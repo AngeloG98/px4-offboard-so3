@@ -2,7 +2,6 @@
 #define __POS_CONTROL_H__
 
 #include <iostream>
-#include <ros/ros.h>
 #include <Eigen/Geometry>
 #include <offboard_so3/common.hpp>
 

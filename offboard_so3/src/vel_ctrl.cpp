@@ -1,38 +1,14 @@
 #include <offboard_so3/vel_ctrl.hpp>
 
-// VelCtrl::VelCtrl()
-// {
-//     f_w_ratio_ = 1.75;
-//     g_ = Eigen::Vector3d(0, 0, -9.8);
-
-//     kp_ = Eigen::Vector4d(2,2,2,1);
-//     ki_ = Eigen::Vector4d(0.1,0.1,0.2,0);
-//     kd_ = Eigen::Vector4d(0,0,0,0);
-
-//     vel_ = Eigen::Vector3d(0, 0, 0);
-//     yaw_ = 0;
-
-//     Acc_Satur = Eigen::Vector3d(2, 2, 2);
-//     Pitch_Satur = 30;
-//     Roll_Satur = 60;
-//     YAWRATE_Satur = 30;
-//     XYZ_D_Satur = Eigen::Vector3d(0.1, 0.1, 0.1);
-//     XYZ_I_Err_Satur = Eigen::Vector3d(0.1, 0.1, 0.3);
-//     YAWRATE_D_Satur = 5;
-//     YAWRATE_I_Err_Satur = 10;
-    
-//     reset();
-// }
-
 void VelCtrl::init(const int &mode,
                    const double &rate,
-                   const double &fwratio,
+                   const double &TWratio,
                    const Eigen::Vector4d &kp,
                    const Eigen::Vector4d &ki,
                    const Eigen::Vector4d &kd,
                    const Eigen::Vector3d &accsatur,
-                   const double &pitchsatur,
                    const double &rollsatur,
+                   const double &pitchsatur,
                    const double &yawratesatur,
                    const Eigen::Vector3d &xyz_dsatur,
                    const Eigen::Vector3d &xyz_i_errsatur,
@@ -41,15 +17,15 @@ void VelCtrl::init(const int &mode,
 {
     mode_ = mode;
     rate_ = rate;
-    f_w_ratio_ = fwratio;
+    T_W_ratio_ = TWratio;
 
     kp_ = kp;
     ki_ = ki;
     kd_ = kd;
 
     Acc_Satur = accsatur;
-    Pitch_Satur = pitchsatur;
     Roll_Satur = rollsatur;
+    Pitch_Satur = pitchsatur;
     YAWRATE_Satur = yawratesatur;
     XYZ_D_Satur = xyz_dsatur;
     XYZ_I_Err_Satur = xyz_i_errsatur;
@@ -75,7 +51,7 @@ void VelCtrl::init(const int &mode,
 
 void VelCtrl::reset(void)
 {
-    err_vel_last_ = << 0.0, 0.0, 0.0;
+    err_vel_last_ << 0.0, 0.0, 0.0;
     err_vel_integrate_ << 0.0, 0.0, 0.0;
     err_yaw_last_ = 0;
     err_yaw_integrate_ = 0;
@@ -91,9 +67,9 @@ void VelCtrl::setVelCtrlRate(const double &rate)
     rate_ = rate;
 }
 
-void VelCtrl::setModelParam(const double &f_w_ratio)
+void VelCtrl::setModelParam(const double &T_W_ratio)
 {
-    f_w_ratio_ = f_w_ratio;
+    T_W_ratio_ = T_W_ratio;
 }
 
 void VelCtrl::setVelCtrlParam(const Eigen::Vector4d &kp,
@@ -147,12 +123,12 @@ void VelCtrl::updateAttitudeCmd(const Eigen::Vector3d &des_vel, const double &de
                     + acc_d \
                     + acc_ff[i];
     }
-    ROS_INFO("acc z: p/ i/ d %f %f %f", kp_[2] * error_vel[2], ki_[2] * err_vel_integrate_[2], 0);
+    // ROS_INFO("acc z: p/ i/ d %f %f %f", kp_[2] * error_vel[2], ki_[2] * err_vel_integrate_[2], 0);
     acc_cmd_ -= g_;
-    ROS_INFO("acc cmd raw: %f %f %f", acc_cmd_[0], acc_cmd_[1], acc_cmd_[2]);
-    limit(acc_cmd_[0], acc_cmd_[1], acc_cmd_[2], f_w_ratio_ * abs(g_[2]));
-    ROS_INFO("acc cmd: %f %f %f", acc_cmd_[0], acc_cmd_[1], acc_cmd_[2]);
-    thr_cmd_ = std::max(0.0, std::min(1.0, acc_cmd_.norm() / (f_w_ratio_ * abs(g_[2]))));
+    // ROS_INFO("acc cmd raw: %f %f %f", acc_cmd_[0], acc_cmd_[1], acc_cmd_[2]);
+    limit(acc_cmd_[0], acc_cmd_[1], acc_cmd_[2], T_W_ratio_ * abs(g_[2]));
+    // ROS_INFO("acc cmd: %f %f %f", acc_cmd_[0], acc_cmd_[1], acc_cmd_[2]);
+    thr_cmd_ = std::max(0.0, std::min(1.0, acc_cmd_.norm() / (T_W_ratio_ * abs(g_[2]))));
 
     //
     double error_yaw = (des_yaw - yaw_)* rad2deg;
