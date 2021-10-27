@@ -88,6 +88,13 @@ private:
     mavros_msgs::SetMode offb_set_mode_;
     mavros_msgs::CommandBool arm_cmd_;
 
+    //des
+    Eigen::Vector3d plan_position_;
+    Eigen::Vector3d plan_velocity_;
+    Eigen::Vector3d plan_acceleration_;
+    double plan_yaw_;
+
+    //cur
     Eigen::Vector3d current_position_;
     Eigen::Vector3d current_velocity_;
     double current_yaw_;
@@ -136,12 +143,24 @@ private:
     void odom_callback(const nav_msgs::Odometry::ConstPtr &odom);
     void pose_callback(const geometry_msgs::PoseStamped::ConstPtr &pose);
     void vel_callback(const geometry_msgs::TwistStamped::ConstPtr &twist);
+    void plan_des_callback(const mavros_msgs::PositionTarget::ConstPtr &plan);
     void posctrl_callback(const ros::TimerEvent &event);
     void velctrl_callback(const ros::TimerEvent &event);
     void status_Callback(const ros::TimerEvent &event);
     void velcmd_NED_publish(const Eigen::Vector3d &velcmd, const double &yawratecmd);
     void att_thr_cmd_publish(const Eigen::Vector4d &quatcmd, const double &thrcmd);
+    void acc_yawrate_cmd_publish(const Eigen::Vector3d &acccmd, const double &yawratecmd);
     void take_off(void);
 };
 
 #endif
+
+Eigen::Vector4d my_pos_kp;
+double my_TWratio;
+Eigen::Vector4d my_vel_kp;
+Eigen::Vector4d my_vel_ki;
+Eigen::Vector3d my_vel_xyz_i_errsatur;
+double my_vel_yawrate_i_errsatur;
+Eigen::Vector3d my_plan_pos;
+Eigen::Vector3d my_plan_vel;
+double my_plan_yaw;

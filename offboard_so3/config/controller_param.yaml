@@ -10,7 +10,7 @@ gain:
   vel_ki: {x: 0.1, y: 0.1, z: 0.3, yaw: 0.0}
   vel_kd: {x: 0.0, y: 0.0, z: 0.0, yaw: 0.0}
 
-twratio: 1.75
+twratio: 1.85
 
 satur:
   pos:
@@ -21,7 +21,7 @@ satur:
     acc_cmd: {x: 2.0, y: 2.0, z: 2.0}
     att_cmd: {roll: 60.0, pitch: 30.0, yawrate: 30.0}
     d: {x: 0.1, y: 0.1, z: 0.1, yawrate: 5.0}
-    i_err: {x: 0.1, y: 0.1, z: 0.3, yawrate: 10.0}
+    i_err: {x: 0.5, y: 0.5, z: 0.5, yawrate: 5.0}
 
 
 

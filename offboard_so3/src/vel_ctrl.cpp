@@ -33,9 +33,10 @@ void VelCtrl::init(const int &mode,
     YAWRATE_I_Err_Satur = yawrate_i_errsatur;
 
     acc_cmd_ << 0.0, 0.0, 0.0;
+    f_cmd_ << 0.0, 0.0, 9.8;
     RotMat_cmd_ << 1.0, 0.0, 0.0,
-                    0.0, 1.0, 0.0,
-                    0.0, 0.0, 1.0;
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0;
     Quat_cmd_ << 1.0, 0.0, 0.0, 0.0;
     Euler_cmd_ << 0.0, 0.0, 0.0;
     yaw_cmd_ = 0;
@@ -123,12 +124,14 @@ void VelCtrl::updateAttitudeCmd(const Eigen::Vector3d &des_vel, const double &de
                     + acc_d \
                     + acc_ff[i];
     }
-    // ROS_INFO("acc z: p/ i/ d %f %f %f", kp_[2] * error_vel[2], ki_[2] * err_vel_integrate_[2], 0);
-    acc_cmd_ -= g_;
-    // ROS_INFO("acc cmd raw: %f %f %f", acc_cmd_[0], acc_cmd_[1], acc_cmd_[2]);
-    limit(acc_cmd_[0], acc_cmd_[1], acc_cmd_[2], T_W_ratio_ * abs(g_[2]));
-    // ROS_INFO("acc cmd: %f %f %f", acc_cmd_[0], acc_cmd_[1], acc_cmd_[2]);
-    thr_cmd_ = std::max(0.0, std::min(1.0, acc_cmd_.norm() / (T_W_ratio_ * abs(g_[2]))));
+    ROS_INFO("acc zp%f", kp_[2]);
+    ROS_INFO("acc zi%f", ki_[2]);
+    ROS_INFO("T_W_ratio_ = %.2f ", T_W_ratio_);
+    ROS_INFO("XYZ_I_Err_Satur = %.2f ", XYZ_I_Err_Satur[2]);
+    // ROS_INFO("acc z: p/ i/ d %f %f %f", kp_[2], ki_[2], 0.0);
+    f_cmd_ = acc_cmd_ - g_;
+    limit(f_cmd_[0], f_cmd_[1], f_cmd_[2], T_W_ratio_ * abs(g_[2]));
+    thr_cmd_ = std::max(0.0, std::min(1.0, f_cmd_.norm() / (T_W_ratio_ * abs(g_[2]))));
 
     //
     double error_yaw = (des_yaw - yaw_)* rad2deg;
@@ -170,14 +173,20 @@ void VelCtrl::updateAttitudeCmd(const Eigen::Vector3d &des_vel, const double &de
     //
     if (mode_ == 0) //no yaw control, use yaw_cmd_(also des_yaw)
     {
-        Quat_cmd_ = acc2quaternion(acc_cmd_, yaw_cmd_);
+        Quat_cmd_ = acc2quaternion(f_cmd_, yaw_cmd_);
     }
     else //mode_ == 2
     {
-        Quat_cmd_ = acc2quaternion(acc_cmd_, yaw_);
+        Quat_cmd_ = acc2quaternion(f_cmd_, yaw_);
     }
 }
 
+
+const Eigen::Vector3d&
+VelCtrl::getAttitudeCmdAcc(void)
+{
+    return acc_cmd_;
+}
 const Eigen::Matrix3d&
 VelCtrl::getAttitudeCmdRotMat(void)
 {

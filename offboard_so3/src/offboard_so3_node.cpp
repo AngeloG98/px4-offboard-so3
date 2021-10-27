@@ -5,26 +5,19 @@ OffboardSO3Node::OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandl
         :nh_(nh), nh_private_(nh_private), musk_(musk)
 {    
     //set controller mode
-    if (musk_ == POS_YAW_NED ||
-        musk_ == POS_YAW_FLU ||
-        musk_ == VEL_YAW_ATT ||
-        musk_ == VEL_YAW_ACC ||
-        musk_ == POS_YAW_NED + VEL_YAW_ATT ||
-        musk_ == POS_YAW_NED + VEL_YAW_ACC)
+    if (musk_ == VEL_YAW_ATT ||
+        musk_ == POS_YAW_NED + VEL_YAW_ATT)
     {
         pos_mode_ = 0;
         vel_mode_ = 0;
     }
-    else if (musk_ == POS_YAWRATE_NED ||
-            musk_ == POS_YAWRATE_FLU)
+    else if (musk_ == POS_YAWRATE_NED)
     {
         pos_mode_ = 1;
         vel_mode_ = 0;
     }
-    else if(musk_ == POS_YAW_NED + VEL_YAWRATE_ATT ||
-            musk_ == POS_YAW_NED + VEL_YAWRATE_ACC ||
-            musk_ == VEL_YAWRATE_ATT ||
-            musk_ == VEL_YAWRATE_ACC)
+    else if(musk_ == VEL_YAWRATE_ACC ||
+            musk_ == POS_YAW_NED + VEL_YAWRATE_ACC)
     {
         pos_mode_ = 0;
         vel_mode_ = 1;
@@ -56,15 +49,15 @@ OffboardSO3Node::OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandl
     nh_private_.param("gain/pos_kd/z", pos_kd[2], 0.0);
     nh_private_.param("gain/pos_kd/yaw", pos_kd[3], 0.0);
 
-    nh_private_.param("satur/pos/vel_cmd/xy", pos_xysatur, 3.0);
+    nh_private_.param("satur/pos/vel_cmd/xy", pos_xysatur, 5.0);
     nh_private_.param("satur/pos/vel_cmd/z", pos_zsatur, 2.0);
-    nh_private_.param("satur/pos/vel_cmd/yawrate", pos_yawratesatur, 30.0);
-    nh_private_.param("satur/pos/d/xy", pos_xy_dsatur, 0.5);
+    nh_private_.param("satur/pos/vel_cmd/yawrate", pos_yawratesatur, 45.0);
+    nh_private_.param("satur/pos/d/xy", pos_xy_dsatur, 0.1);
     nh_private_.param("satur/pos/i_err/yawrate", pos_xy_i_errsatur, 0.1);
-    nh_private_.param("satur/pos/d/xy", pos_yaw_dsatur, 5.0);
-    nh_private_.param("satur/pos/i_err/yawrate", pos_yawrate_i_errsatur, 10.0);
+    nh_private_.param("satur/pos/d/xy", pos_yaw_dsatur, 1.0);
+    nh_private_.param("satur/pos/i_err/yawrate", pos_yawrate_i_errsatur, 1.0);
     
-    nh_private_.param("twratio", TWratio, 1.75);
+    nh_private_.param("twratio", TWratio, 1.85);
 
     nh_private_.param("gain/vel_kp/x", vel_kp[0], 2.0);
     nh_private_.param("gain/vel_kp/y", vel_kp[1], 2.0);
@@ -73,7 +66,7 @@ OffboardSO3Node::OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandl
 
     nh_private_.param("gain/vel_ki/x", vel_ki[0], 0.1);
     nh_private_.param("gain/vel_ki/y", vel_ki[1], 0.1);
-    nh_private_.param("gain/vel_ki/z", vel_ki[2], 0.2);
+    nh_private_.param("gain/vel_ki/z", vel_ki[2], 0.1);
     nh_private_.param("gain/vel_ki/yaw", vel_ki[3], 0.0);
 
     nh_private_.param("gain/vel_kd/x", vel_kd[0], 0.0);
@@ -92,9 +85,9 @@ OffboardSO3Node::OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandl
     nh_private_.param("satur/vel/d/z", vel_xyz_dsatur[2], 0.1);
     nh_private_.param("satur/vel/i_err/x", vel_xyz_i_errsatur[0], 0.1);
     nh_private_.param("satur/vel/i_err/y", vel_xyz_i_errsatur[1], 0.1);
-    nh_private_.param("satur/vel/i_err/z", vel_xyz_i_errsatur[2], 0.3);
-    nh_private_.param("satur/vel/d/yawrate", vel_yawrate_dsatur, 5.0);
-    nh_private_.param("satur/vel/i_err/yawrate", vel_yawrate_i_errsatur, 10.0);
+    nh_private_.param("satur/vel/i_err/z", vel_xyz_i_errsatur[2], 0.1);
+    nh_private_.param("satur/vel/d/yawrate", vel_yawrate_dsatur, 1.0);
+    nh_private_.param("satur/vel/i_err/yawrate", vel_yawrate_i_errsatur, 1.0);
 
     pos_controller_.init(pos_mode_, pos_ctrl_rate_,
                          pos_kp, pos_ki, pos_kd,
@@ -118,7 +111,8 @@ OffboardSO3Node::OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandl
     // odom_sub_ = nh_.subscribe<nav_msgs::Odometry>("/mavros/local_position/odom", 10, &OffboardSO3Node::odom_callback,this);
     pose_sub_ = nh_.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 10, &OffboardSO3Node::pose_callback,this);
     vel_sub_ = nh_.subscribe<geometry_msgs::TwistStamped>("/mavros/local_position/velocity_local", 10, &OffboardSO3Node::vel_callback,this);
-    
+    plan_des_sub_ = nh_.subscribe<mavros_msgs::PositionTarget>("/plan/trajectory", 10, &OffboardSO3Node::plan_des_callback,this);
+
     arming_client_ = nh_.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     set_mode_client_ = nh_.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
 
@@ -133,9 +127,14 @@ OffboardSO3Node::OffboardSO3Node(const ros::NodeHandle &nh, const ros::NodeHandl
     att_cnt = 0;
     odom_cnt = 0;
 
+    plan_position_ << 0.0, 0.0, 0.0;
+    plan_velocity_ << 0.0, 0.0, 0.0;
+    plan_acceleration_ << 0.0, 0.0, 0.0;
+    plan_yaw_ = 0.0;
+
     current_position_ << 0.0, 0.0, 0.0;
     current_velocity_ << 0.0, 0.0, 0.0;
-    current_yaw_ = 0;
+    current_yaw_ = 0.0;
 
     takeoff_ = false;
 }
@@ -186,34 +185,86 @@ OffboardSO3Node::vel_callback(const geometry_msgs::TwistStamped::ConstPtr &twist
 }
 
 void
+OffboardSO3Node::plan_des_callback(const mavros_msgs::PositionTarget::ConstPtr &plan)
+{
+
+}
+
+void
 OffboardSO3Node::posctrl_callback(const ros::TimerEvent &event)
 {
+    plan_position_ = my_plan_pos;
+    plan_velocity_ = my_plan_vel;
+    plan_yaw_ = my_plan_yaw;
+
+    pos_kp = my_pos_kp;
+    pos_controller_.setPosCtrlParam(pos_kp, pos_ki, pos_kd);
     if (takeoff_)
-    {
-        Eigen::Vector3d des_pos(2, 3, 2);
-        double des_yaw = 0;
-        Eigen::Vector3d vel_ff(0, 0, 0);
-        pos_controller_.updateVelocityCmd(des_pos, des_yaw, vel_ff);
-        velcmd_NED_publish(pos_controller_.getVelocityCmdENU(),pos_controller_.getYawrateCmd());
+    {  
+        if (musk_ == VEL_YAW_ATT ||
+            musk_ == POS_YAW_NED + VEL_YAW_ATT)
+        {
+            pos_controller_.updateVelocityCmd(plan_position_, plan_yaw_, plan_velocity_);
+        }
+        else if (musk_ == POS_YAWRATE_NED)
+        {
+            pos_controller_.updateVelocityCmd(plan_position_, plan_yaw_, plan_velocity_);
+            velcmd_NED_publish(pos_controller_.getVelocityCmdENU(),pos_controller_.getYawrateCmd());
+        }
+        else if(musk_ == VEL_YAWRATE_ACC ||
+                musk_ == POS_YAW_NED + VEL_YAWRATE_ACC)
+        {
+            pos_controller_.updateVelocityCmd(plan_position_, plan_yaw_, plan_velocity_);
+        }
     }
 }
 
 void
 OffboardSO3Node::velctrl_callback(const ros::TimerEvent &event)
 {
+    plan_velocity_ = my_plan_vel;
+    plan_yaw_ = my_plan_yaw;
+
+    TWratio = my_TWratio;
+    vel_kp = my_vel_kp;
+    vel_ki = my_vel_ki;
+    vel_controller_.XYZ_I_Err_Satur = my_vel_xyz_i_errsatur;
+    vel_controller_.YAWRATE_I_Err_Satur = my_vel_yawrate_i_errsatur;
+    vel_controller_.setModelParam(TWratio);
+    vel_controller_.setVelCtrlParam(vel_kp, vel_ki, vel_kd);
     if (takeoff_)
     {
-        // Eigen::Vector3d des_vel(0, 0, 0);
-        // double des_yaw = 0;
-        // Eigen::Vector3d acc_ff(0, 0, 0);
-        // vel_controller_.updateAttitudeCmd(des_vel, des_yaw, acc_ff);
-        // att_thr_cmd_publish(vel_controller_.getAttitudeCmdQuat(),vel_controller_.getThrottleCmd());
+        if (musk_ == VEL_YAW_ATT)
+        {
+            vel_controller_.updateAttitudeCmd(plan_velocity_, plan_yaw_, plan_acceleration_);
+            att_thr_cmd_publish(vel_controller_.getAttitudeCmdQuat(),vel_controller_.getThrottleCmd());
+        }
+        else if (musk_ == POS_YAW_NED + VEL_YAW_ATT)
+        {
+            vel_controller_.updateAttitudeCmd(pos_controller_.getVelocityCmdENU(), plan_yaw_, plan_acceleration_);
+            att_thr_cmd_publish(vel_controller_.getAttitudeCmdQuat(),vel_controller_.getThrottleCmd());
+        }
+        else if (musk_ == POS_YAWRATE_NED)
+        {
+            //
+        }
+        else if(musk_ == VEL_YAWRATE_ACC)
+        {
+            vel_controller_.updateAttitudeCmd(plan_velocity_, plan_yaw_, plan_acceleration_);
+            acc_yawrate_cmd_publish(vel_controller_.getAttitudeCmdAcc(),vel_controller_.getYawrateCmd());
+        }
+        else if (musk_ == POS_YAW_NED + VEL_YAWRATE_ACC)
+        {
+            vel_controller_.updateAttitudeCmd(pos_controller_.getVelocityCmdENU(), plan_yaw_, plan_acceleration_);
+            acc_yawrate_cmd_publish(vel_controller_.getAttitudeCmdAcc(),vel_controller_.getYawrateCmd());
+        } 
     }
 }
 
 void OffboardSO3Node::velcmd_NED_publish(const Eigen::Vector3d &velcmd, const double &yawratecmd)
 {
     mavros_msgs::PositionTarget msg;
+
     msg.header.stamp = ros::Time::now();
     msg.header.frame_id = "vel_ned";
     msg.coordinate_frame = FRAME_LOCAL_NED;
@@ -278,14 +329,50 @@ OffboardSO3Node::att_thr_cmd_publish(const Eigen::Vector4d &quatcmd, const doubl
 }
 
 void
+OffboardSO3Node::acc_yawrate_cmd_publish(const Eigen::Vector3d &acccmd, const double &yawratecmd)
+{
+    mavros_msgs::PositionTarget msg;
+
+    msg.header.stamp = ros::Time::now();
+    msg.header.frame_id = "acc_yawrate";
+    msg.coordinate_frame = FRAME_LOCAL_NED;
+    msg.type_mask = IGNORE_PX + IGNORE_PY + IGNORE_PZ + IGNORE_VX + IGNORE_VY \
+                    + IGNORE_VZ + IGNORE_YAW;  //ignore pos vel yaw messages, don't use force
+    msg.position.x = 0;
+    msg.position.y = 0;
+    msg.position.z = 0;
+    msg.velocity.x = 0;
+    msg.velocity.y = 0;
+    msg.velocity.z = 0;
+    msg.acceleration_or_force.x = acccmd[0];
+    msg.acceleration_or_force.y = acccmd[1];
+    msg.acceleration_or_force.z = acccmd[2];
+    msg.yaw = 0;
+    msg.yaw_rate = yawratecmd;
+    local_pub_.publish(msg);
+    if (att_cnt % 50 == 0)
+    {
+        ROS_INFO("acc and yawrate cmd : %f %f %f %f", \
+        msg.acceleration_or_force.x, msg.acceleration_or_force.y, msg.acceleration_or_force.z, msg.yaw_rate);
+    }
+    att_cnt++;
+    if (odom_cnt % 50 == 0)
+    {
+        ROS_INFO("current position : %f %f %f %f", current_position_[0],current_position_[1],current_position_[2],current_yaw_*rad2deg);
+        ROS_INFO("current velocity : %f %f %f", current_velocity_[0],current_velocity_[1],current_velocity_[2]);
+    }
+    odom_cnt++;
+}
+
+void
 OffboardSO3Node::status_Callback(const ros::TimerEvent &event)
 {
-    while(ros::ok() && !current_state_.connected)
-    {
-        ros::spinOnce();
-        ROS_INFO("Connecting...");
+    // while(ros::ok() && !current_state_.connected)
+    // {
+    //     ros::spinOnce();
+    //     ROS_INFO("Connecting...");
         
-    }
+    // }
     take_off();
 }
 
@@ -371,9 +458,147 @@ void
 OffboardSO3Node::dynamicReconfigureCallback(offboard_so3::OffboardSo3ControllerConfig &config,
                                                  uint32_t level)
 {
-    ROS_INFO("success");
+    if (my_TWratio != config.tw_ratio) 
+    {
+        my_TWratio = config.tw_ratio;
+        ROS_INFO("Reconfigure request : TWratio = %.2f ", my_TWratio);
+    } 
+    // pos_kp
+    if (my_pos_kp[0] != config.pos_kp_x) 
+    {
+        my_pos_kp[0] = config.pos_kp_x;
+        ROS_INFO("Reconfigure request : pos_kp_x  = %.2f  ", my_pos_kp[0]);
+    }
+    if (my_pos_kp[1] != config.pos_kp_y) 
+    {
+        my_pos_kp[1] = config.pos_kp_y;
+        ROS_INFO("Reconfigure request : pos_kp_y  = %.2f  ", my_pos_kp[1]);
+    } 
+    if (my_pos_kp[2] != config.pos_kp_z) 
+    {
+        my_pos_kp[2] = config.pos_kp_z;
+        ROS_INFO("Reconfigure request : pos_kp_z  = %.2f  ", my_pos_kp[2]);
+    } 
+    if (my_pos_kp[3] != config.pos_kp_yaw) 
+    {
+        my_pos_kp[3] = config.pos_kp_yaw;
+        ROS_INFO("Reconfigure request : pos_kp_yaw  = %.2f  ", my_pos_kp[3]);
+    } 
+    // vel_kp
+    if (my_vel_kp[0] != config.vel_kp_x) 
+    {
+        my_vel_kp[0] = config.vel_kp_x;
+        ROS_INFO("Reconfigure request : vel_kp_x =%.2f  ", my_vel_kp[0]);
+    } 
+    if (my_vel_kp[1] != config.vel_kp_y) 
+    {
+        my_vel_kp[1] = config.vel_kp_y;
+        ROS_INFO("Reconfigure request : vel_kp_y  = %.2f  ", my_vel_kp[1]);
+    }
+    if (my_vel_kp[2] != config.vel_kp_z) 
+    {
+        my_vel_kp[2] = config.vel_kp_z;
+        ROS_INFO("Reconfigure request : vel_kp_z  = %.2f  ", my_vel_kp[2]);
+    }
+    if (my_vel_kp[3] != config.vel_kp_yaw) 
+    {
+        my_vel_kp[3] = config.vel_kp_yaw;
+        ROS_INFO("Reconfigure request : vel_kp_yaw  = %.2f  ", my_vel_kp[3]);
+    }
+    //vel_ki
+    if (my_vel_ki[0] != config.vel_ki_x) 
+    {
+        my_vel_ki[0] = config.vel_ki_x;
+        ROS_INFO("Reconfigure request : vel_ki_x  = %.2f  ", my_vel_ki[0]);
+    }
+    if (my_vel_ki[1] != config.vel_ki_y) 
+    {
+        my_vel_ki[1] = config.vel_ki_y;
+        ROS_INFO("Reconfigure request : vel_ki_y  = %.2f  ", my_vel_ki[1]);
+    }
+    if (my_vel_ki[2] != config.vel_ki_z) 
+    {
+        my_vel_ki[2] = config.vel_ki_z;
+        ROS_INFO("Reconfigure request : vel_ki_z  = %.2f  ", my_vel_ki[2]);
+    }
+    if (my_vel_ki[3] != config.vel_ki_yaw) 
+    {
+        my_vel_ki[3] = config.vel_ki_yaw;
+        ROS_INFO("Reconfigure request : vel_ki_yaw  = %.2f  ", my_vel_ki[3]);
+    }
+    //vel_i_satur
+    if (my_vel_xyz_i_errsatur[0] != config.vel_i_satur_x) 
+    {
+        my_vel_xyz_i_errsatur[0] = config.vel_i_satur_x;
+        ROS_INFO("Reconfigure request : vel_i_satur_x  = %.2f  ", my_vel_xyz_i_errsatur[0]);
+    }
+    if (my_vel_xyz_i_errsatur[1] != config.vel_i_satur_y) 
+    {
+        my_vel_xyz_i_errsatur[1] = config.vel_i_satur_y;
+        ROS_INFO("Reconfigure request : vel_i_satur_y  = %.2f  ", my_vel_xyz_i_errsatur[1]);
+    }
+    if (my_vel_xyz_i_errsatur[2] != config.vel_i_satur_z) 
+    {
+        my_vel_xyz_i_errsatur[2] = config.vel_i_satur_z;
+        ROS_INFO("Reconfigure request : vel_i_satur_z  = %.2f  ", my_vel_xyz_i_errsatur[2]);
+    }
+    if (my_vel_yawrate_i_errsatur != config.vel_i_satur_yaw) 
+    {
+        my_vel_yawrate_i_errsatur = config.vel_i_satur_yaw;
+        ROS_INFO("Reconfigure request : vel_i_satur_yaw  = %.2f  ", my_vel_yawrate_i_errsatur);
+    }
+    //plan
+    if (my_plan_pos[0] != config.plan_pos_x) 
+    {
+        my_plan_pos[0] = config.plan_pos_x;
+        ROS_INFO("Reconfigure request : plan_pos_x  = %.2f  ", my_plan_pos[0]);
+    }
+    if (my_plan_pos[1] != config.plan_pos_y) 
+    {
+        my_plan_pos[1] = config.plan_pos_y;
+        ROS_INFO("Reconfigure request : plan_pos_x  = %.2f  ", my_plan_pos[1]);
+    }
+    if (my_plan_pos[2] != config.plan_pos_z) 
+    {
+        my_plan_pos[2] = config.plan_pos_z;
+        ROS_INFO("Reconfigure request : plan_pos_x  = %.2f  ", my_plan_pos[2]);
+    }
+        if (my_plan_pos[0] != config.plan_pos_x) 
+    {
+        my_plan_pos[0] = config.plan_pos_x;
+        ROS_INFO("Reconfigure request : plan_pos_x  = %.2f  ", my_plan_pos[0]);
+    }
+    if (my_plan_pos[1] != config.plan_pos_y) 
+    {
+        my_plan_pos[1] = config.plan_pos_y;
+        ROS_INFO("Reconfigure request : plan_pos_y  = %.2f  ", my_plan_pos[1]);
+    }
+    if (my_plan_pos[2] != config.plan_pos_z) 
+    {
+        my_plan_pos[2] = config.plan_pos_z;
+        ROS_INFO("Reconfigure request : plan_pos_z  = %.2f  ", my_plan_pos[2]);
+    }
+    if (my_plan_vel[0] != config.plan_vel_x) 
+    {
+        my_plan_vel[0] = config.plan_vel_x;
+        ROS_INFO("Reconfigure request : plan_vel_x  = %.2f  ", my_plan_vel[0]);
+    }
+    if (my_plan_vel[1] != config.plan_vel_y) 
+    {
+        my_plan_vel[1] = config.plan_vel_y;
+        ROS_INFO("Reconfigure request : plan_vel_y  = %.2f  ", my_plan_vel[1]);
+    }
+    if (my_plan_vel[2] != config.plan_vel_z) 
+    {
+        my_plan_vel[2] = config.plan_vel_z;
+        ROS_INFO("Reconfigure request : plan_vel_z  = %.2f  ", my_plan_vel[2]);
+    }
+    if (my_plan_yaw != config.plan_yaw) 
+    {
+        my_plan_yaw = config.plan_yaw;
+        ROS_INFO("Reconfigure request : plan_yaw  = %.2f  ", my_plan_yaw);
+    }
 }
-
 
 int main(int argc, char **argv)
 {

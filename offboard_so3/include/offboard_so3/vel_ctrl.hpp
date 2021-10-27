@@ -4,6 +4,7 @@
 #include <iostream>
 #include <Eigen/Geometry>
 #include <offboard_so3/common.hpp>
+#include <ros/ros.h>
 
 class VelCtrl
 {
@@ -36,6 +37,7 @@ public:
     void updateAttitudeCmd(const Eigen::Vector3d &des_vel, const double &des_yaw,
                            const Eigen::Vector3d &acc_ff);
 
+    const Eigen::Vector3d &getAttitudeCmdAcc(void);
     const Eigen::Matrix3d &getAttitudeCmdRotMat(void);
     const Eigen::Vector4d &getAttitudeCmdQuat(void);
     const Eigen::Vector3d &getAttitudeCmdEuler(void);
@@ -50,6 +52,10 @@ public:
     Eigen::Vector3d XYZ_I_Err_Satur;
     double YAWRATE_D_Satur;
     double YAWRATE_I_Err_Satur;
+    
+    Eigen::Vector4d kp_;
+    Eigen::Vector4d ki_;
+    Eigen::Vector4d kd_;
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -62,14 +68,13 @@ private:
     double T_W_ratio_;
     Eigen::Vector3d g_;
 
-    Eigen::Vector4d kp_;
-    Eigen::Vector4d ki_;
-    Eigen::Vector4d kd_;
+
 
     Eigen::Vector3d vel_;
     double yaw_;
 
     Eigen::Vector3d acc_cmd_;
+    Eigen::Vector3d f_cmd_;
     Eigen::Matrix3d RotMat_cmd_;
     Eigen::Vector4d Quat_cmd_;
     Eigen::Vector3d Euler_cmd_;
